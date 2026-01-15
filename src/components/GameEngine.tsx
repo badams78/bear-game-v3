@@ -5,7 +5,7 @@ import { useGamePhysics } from '../hooks/useGamePhysics';
 
 export default function GameEngine() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const { player, updatePhysics } = useGamePhysics();
+    const { player, worldObjects, updatePhysics } = useGamePhysics();
     const requestRef = useRef<number>(0);
 
     const draw = (ctx: CanvasRenderingContext2D) => {
@@ -36,6 +36,51 @@ export default function GameEngine() {
             ctx.lineWidth = 3;
             ctx.stroke();
         }
+
+        // --- DRAW WORLD OBJECTS ---
+        // Only draw visible objects (viewport optimization)
+        // Viewport center is player.y. Viewport height ~600px canvas.
+        // We render objects where obj.y is relative to player.y
+
+        ctx.fillStyle = '#1e293b'; // Tree trunk color
+
+        worldObjects.forEach(obj => {
+            // Calculate relative Y position
+            // If player is at y=1000, and obj is at y=1200, it should be BELOW player.
+            // Screen Y = PlayerScreenY + (ObjY - PlayerY)
+            const objScreenY = playerScreenY + (obj.y - player.y);
+
+            // Transform absolute % X to screen X
+            const objScreenX = (obj.x / 100) * ctx.canvas.width;
+
+            // Simple culling
+            if (objScreenY < -100 || objScreenY > ctx.canvas.height + 100) return;
+
+            if (obj.type === 'TREE') {
+                // Draw Triangle Type Tree
+                ctx.fillStyle = '#0f766e';
+                ctx.beginPath();
+                ctx.moveTo(objScreenX, objScreenY - obj.height); // Top
+                ctx.lineTo(objScreenX - obj.width / 2, objScreenY); // Bottom Left
+                ctx.lineTo(objScreenX + obj.width / 2, objScreenY); // Bottom Right
+                ctx.fill();
+            } else if (obj.type === 'LANDMARK_ROCK') {
+                ctx.fillStyle = '#64748b'; // Rock Gray
+                ctx.fillRect(objScreenX - obj.width / 2, objScreenY - obj.height, obj.width, obj.height);
+            } else if (obj.type === 'ICE_PATCH') {
+                ctx.fillStyle = '#bfdbfe'; // Light Blue Ice
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.ellipse(objScreenX, objScreenY, obj.width, obj.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            } else if (obj.type.startsWith('GATE')) {
+                ctx.fillStyle = obj.type === 'GATE_LEFT' ? '#ef4444' : '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(objScreenX, objScreenY, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
 
         // DEBUG HUD
         ctx.fillStyle = 'black';

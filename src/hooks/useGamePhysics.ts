@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { generateCourse, WorldObject } from '../lib/gameWorld';
 
 // Types
 export type PlayerState = {
@@ -19,8 +20,11 @@ const TUCK_MAX_SPEED = 22;
 const TUCK_ACCEL = 0.2;
 
 export function useGamePhysics() {
+    // Generate world once on mount
+    const [worldObjects] = useState<WorldObject[]>(() => generateCourse());
+
     const [player, setPlayer] = useState<PlayerState>({
-        x: 50, // Percent width (0-100)
+        x: 50,
         y: 0,
         speedX: 0,
         speedY: 0,
@@ -77,16 +81,47 @@ export function useGamePhysics() {
             if (newX < 0) { newX = 0; newSpeedX = 0; }
             if (newX > 100) { newX = 100; newSpeedX = 0; }
 
+            // Collision Detection
+            let crashed = false;
+            // Only check objects near player (optimization)
+            const nearbyObjects = worldObjects.filter(obj =>
+                obj.y > newY - 100 && obj.y < newY + 100
+            );
+
+            for (const obj of nearbyObjects) {
+                // Simple box collision
+                // Player Width ~ 30px (mapped to % approx 4%)
+                const playerWidthPercent = 3;
+                const playerHeight = 20;
+
+                // Map object width to percent approx (assuming 800px screen width for logic)
+                const objWidthPercent = (obj.width / 800) * 100;
+
+                // Check Overlap
+                // Y-axis overlap (Player is at newY)
+                // Object is at obj.y
+                if (Math.abs(newY - obj.y) < (obj.height / 2)) {
+                    // X-axis overlap
+                    if (Math.abs(newX - obj.x) < (objWidthPercent / 2 + playerWidthPercent / 2)) {
+                        if (obj.type === 'TREE' || obj.type === 'LANDMARK_ROCK') {
+                            crashed = true;
+                            newSpeedY = 0;
+                            newSpeedX = 0;
+                        }
+                    }
+                }
+            }
+
             return {
                 x: newX,
                 y: newY,
                 speedX: newSpeedX,
                 speedY: newSpeedY,
                 isTucking,
-                isCrashed: false,
+                isCrashed: crashed,
             };
         });
     }, []);
 
-    return { player, updatePhysics };
+    return { player, worldObjects, updatePhysics };
 }

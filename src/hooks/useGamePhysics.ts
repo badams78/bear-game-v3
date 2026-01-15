@@ -47,6 +47,16 @@ export function useGamePhysics() {
         };
     }, []);
 
+    // AI State
+    const [ai, setAi] = useState<PlayerState>({
+        x: 60, // Starts next to player
+        y: 0,
+        speedX: 0,
+        speedY: 0,
+        isTucking: false,
+        isCrashed: false,
+    });
+
     // Main Physics Loop Tick
     const updatePhysics = useCallback(() => {
         setPlayer(prev => {
@@ -54,74 +64,97 @@ export function useGamePhysics() {
 
             const isTucking = keys.current.has('ArrowDown');
 
-            // Calculate speeds
-            let newSpeedY = prev.speedY;
+            // ... (Player Physics Code Logic stays same, just re-calc for closure scope if needed, but we are inside setPlayer callback which complicates AI update.
+            // Better to update both states outside the functional update or doing them sequentially.)
+            // Actually, we need to update AI *based* on Player position for rubber banding.
+
+            // NOTE: To cleanly update both without race conditions in a single tick, 
+            // we should probably refactor to a single state object { player, ai }.
+            // But for now, we can use a functional update for AI inside the same callback if we had access to current player, 
+            // OR just update AI independently based on its own previous state + a ref to player Y.
+
+            return prev; // Placeholder to avoid breaking flow while I rewrite the logic below
+        });
+
+        // REWRITE: We need to update both. 
+        // Let's do the Player Update first, capture the result, then update AI.
+        // Javascript state updates are batched. 
+
+        setPlayer(prevPlayer => {
+            if (prevPlayer.isCrashed) return prevPlayer;
+
+            // --- PLAYER PHYSICS ---
+            const isTucking = keys.current.has('ArrowDown');
+            let newSpeedY = prevPlayer.speedY;
             const targetMaxSpeed = isTucking ? TUCK_MAX_SPEED : MAX_SPEED;
+            if (newSpeedY < targetMaxSpeed) newSpeedY += isTucking ? TUCK_ACCEL : 0.1;
 
-            // Accelerate downhill
-            if (newSpeedY < targetMaxSpeed) {
-                newSpeedY += isTucking ? TUCK_ACCEL : 0.1;
-            }
-
-            // Steering
-            let newSpeedX = prev.speedX;
-            const steerFactor = isTucking ? 0.3 : 1.0; // Harder to steer while tucking
-
+            let newSpeedX = prevPlayer.speedX;
+            const steerFactor = isTucking ? 0.3 : 1.0;
             if (keys.current.has('ArrowLeft')) newSpeedX -= STEERING_SPEED * steerFactor;
             if (keys.current.has('ArrowRight')) newSpeedX += STEERING_SPEED * steerFactor;
-
-            // Friction / Drag
             newSpeedX *= FRICTION;
 
-            // Update Position
-            let newX = prev.x + newSpeedX;
-            const newY = prev.y + newSpeedY;
-
-            // Bounds Checking (Walls)
+            let newX = prevPlayer.x + newSpeedX;
+            const newY = prevPlayer.y + newSpeedY;
             if (newX < 0) { newX = 0; newSpeedX = 0; }
             if (newX > 100) { newX = 100; newSpeedX = 0; }
 
-            // Collision Detection
+            // Collision
             let crashed = false;
-            // Only check objects near player (optimization)
-            const nearbyObjects = worldObjects.filter(obj =>
-                obj.y > newY - 100 && obj.y < newY + 100
-            );
-
+            const nearbyObjects = worldObjects.filter(obj => obj.y > newY - 100 && obj.y < newY + 100);
             for (const obj of nearbyObjects) {
-                // Simple box collision
-                // Player Width ~ 30px (mapped to % approx 4%)
                 const playerWidthPercent = 3;
-                const playerHeight = 20;
-
-                // Map object width to percent approx (assuming 800px screen width for logic)
                 const objWidthPercent = (obj.width / 800) * 100;
-
-                // Check Overlap
-                // Y-axis overlap (Player is at newY)
-                // Object is at obj.y
                 if (Math.abs(newY - obj.y) < (obj.height / 2)) {
-                    // X-axis overlap
                     if (Math.abs(newX - obj.x) < (objWidthPercent / 2 + playerWidthPercent / 2)) {
                         if (obj.type === 'TREE' || obj.type === 'LANDMARK_ROCK') {
-                            crashed = true;
-                            newSpeedY = 0;
-                            newSpeedX = 0;
+                            crashed = true; newSpeedY = 0; newSpeedX = 0;
                         }
                     }
                 }
             }
 
+            // Update AI based on this NEW player position? No, react state isn't instant.
+            // We will update AI based on *previous* player Y or just its own logic + rubber banding to "ideal" pace.
+
             return {
-                x: newX,
-                y: newY,
-                speedX: newSpeedX,
-                speedY: newSpeedY,
-                isTucking,
-                isCrashed: crashed,
+                x: newX, y: newY, speedX: newSpeedX, speedY: newSpeedY, isTucking, isCrashed: crashed
             };
         });
-    }, []);
 
-    return { player, worldObjects, updatePhysics };
+        setAi(prevAi => {
+            // AI LOGIC
+            // Goal: Center of track (x=50) but weave slightly
+            // Speed: Rubber band to player y
+
+            // We can't see "current" player Y here easily without a ref, 
+            // so we'll just have AI race at a "Target Pace" that speeds up if it falls behind global time 
+            // OR just strictly simple AI for now:
+
+            let targetSpeed = 16;
+            // Simple weave
+            const time = Date.now() / 1000;
+            const targetX = 50 + Math.sin(time) * 30; // Weave between 20 and 80
+
+            let newSpeedY = prevAi.speedY;
+            if (newSpeedY < targetSpeed) newSpeedY += 0.1;
+
+            let newSpeedX = prevAi.speedX;
+            if (prevAi.x < targetX) newSpeedX += 0.2;
+            else newSpeedX -= 0.2;
+            newSpeedX *= 0.95; // Friction
+
+            return {
+                ...prevAi,
+                x: prevAi.x + newSpeedX,
+                y: prevAi.y + newSpeedY,
+                speedX: newSpeedX,
+                speedY: newSpeedY
+            };
+        });
+
+    }, [worldObjects]); // Added dependency
+
+    return { player, ai, worldObjects, updatePhysics };
 }

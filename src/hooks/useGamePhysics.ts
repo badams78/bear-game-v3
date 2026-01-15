@@ -64,6 +64,8 @@ export function useGamePhysics() {
 
     // Main Physics Loop Tick
     const updatePhysics = useCallback(() => {
+        if (gameState !== 'RACING') return;
+
         setPlayer(prev => {
             if (prev.isCrashed) return prev;
 

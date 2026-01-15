@@ -3,12 +3,16 @@
 import { useRef, useEffect } from 'react';
 import { useGamePhysics } from '../hooks/useGamePhysics';
 import { useAssetLoader } from '../hooks/useAssetLoader';
+import ResultOverlay from './ResultOverlay';
 
 export default function GameEngine() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { assets, loaded } = useAssetLoader();
-    const { player, ai, worldObjects, updatePhysics } = useGamePhysics();
+    const { player, ai, worldObjects, updatePhysics, gameState } = useGamePhysics();
     const requestRef = useRef<number>(0);
+
+    // Quick reload for now to "Restart" (Physics hook needs a reset function, but reload is safer for proto)
+    const handleRestart = () => window.location.reload();
 
     const draw = (ctx: CanvasRenderingContext2D) => {
         // Clear Canvas
@@ -165,6 +169,8 @@ export default function GameEngine() {
             <div className="absolute bottom-4 left-4 text-xs text-slate-400 font-mono">
                 Controls: Arrows to Steer | Down to Tuck
             </div>
+
+            <ResultOverlay status={gameState} onRestart={handleRestart} />
         </div>
     );
 }

@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Phantom of Eagle Hill",
-  description: "A mystery at Eaglebrook. Can you find the trophy before the big race?",
+  title: "Bear Ski Game",
+  description: "A nostalgic ski adventure.",
   openGraph: {
-    title: "The Phantom of Eagle Hill",
-    description: "A mystery at Eaglebrook. Can you find the trophy before the big race?",
+    title: "Bear Ski Game",
+    description: "A nostalgic ski adventure.",
     type: "website",
   }
 };

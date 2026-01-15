@@ -124,7 +124,7 @@ export const LOCATIONS: Record<LocationId, Omit<Location, 'choices'> & { choices
         id: 'EAGLE_HILL_SUMMIT',
         name: 'Eagle Hill Summit',
         description: 'The peak of the mountain. The air is thin and biting. Tracks lead towards the cliff edge.',
-        image: '/images/summit.jpg', // Placeholder
+        image: '/images/summit.jpg',
         isLocked: true,
         requiredItem: 'SKI_GOGGLES',
         lockedMessage: 'The wind and snow are blinding! You need eye protection to proceed safely up the mountain.',

@@ -51,11 +51,44 @@ export function VictoryModal({ suspectName, onPlayAgain }: VictoryModalProps) {
 
                 <button
                     onClick={onPlayAgain}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-crimson hover:bg-red-800 text-white font-bold rounded transition-colors shadow-lg hover:shadow-crimson/25"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-crimson hover:bg-red-800 text-white font-bold rounded transition-colors shadow-lg hover:shadow-crimson/25 mb-8"
                 >
                     <RefreshCw className="w-4 h-4" />
                     Play Again
                 </button>
+
+                {/* Closing Credits / Historical Archive */}
+                <div className="border-t border-slate-800 pt-6">
+                    <h3 className="text-slate-400 text-sm uppercase tracking-widest mb-4">Historical Archive</h3>
+                    <div className="relative h-48 overflow-hidden rounded bg-black/40 shadow-inner">
+                        <div className="absolute inset-0 overflow-x-auto flex items-center gap-4 px-4 animate-scroll-horizontal hover:pause-animation">
+                            {[
+                                '/images/new_assets/easton-profile-1.jpg',
+                                '/images/new_assets/easton-profile-2.jpg',
+                                '/images/new_assets/easton-profile-3.jpg',
+                                '/images/new_assets/double-chair.jpg',
+                                '/images/new_assets/t-bar.jpg',
+                                '/images/new_assets/easton-aerial.jpg',
+                                '/images/new_assets/photo_01.jpg',
+                                '/images/new_assets/photo_02.jpg',
+                                '/images/new_assets/photo_03.jpg',
+                                '/images/new_assets/photo_04.jpg',
+                                '/images/new_assets/photo_05.jpg',
+                                '/images/new_assets/photo_06.jpg',
+                                '/images/new_assets/photo_07.jpg',
+                                '/images/new_assets/photo_08.jpg',
+                                '/images/new_assets/easton-map-2020.jpg',
+                            ].map((src, i) => (
+                                <img
+                                    key={i}
+                                    src={src}
+                                    alt={`Archive ${i}`}
+                                    className="h-40 w-auto max-w-none rounded shadow-md border border-slate-700/50"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
                 {/* Simple CSS Confetti (dots) */}
                 {showConfetti && (

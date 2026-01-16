@@ -26,6 +26,11 @@ export function useGamePhysics() {
     const [worldObjects] = useState<WorldObject[]>(() => generateCourse());
     const [gameState, setGameState] = useState<GameStatus>('START_SCREEN');
 
+    // Force Start Screen on Mount to be safe
+    useEffect(() => {
+        setGameState('START_SCREEN');
+    }, []);
+
     // ... rest of state
 
     const [player, setPlayer] = useState<PlayerState>({

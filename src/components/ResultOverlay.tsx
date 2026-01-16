@@ -13,8 +13,8 @@ export default function ResultOverlay({ status, onRestart, onStart }: ResultOver
     if (status === 'RACING') return null;
 
     return (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-slate-900 border-2 border-slate-700 p-8 rounded-xl max-w-md text-center shadow-2xl transform transition-all scale-100">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in">
+            <div className="bg-slate-900 border-2 border-slate-700 p-8 rounded-xl max-w-md text-center shadow-2xl transform transition-all scale-100 relative">
 
                 {status === 'START_SCREEN' && (
                     <>

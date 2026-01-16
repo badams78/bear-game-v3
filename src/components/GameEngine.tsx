@@ -8,7 +8,7 @@ import ResultOverlay from './ResultOverlay';
 export default function GameEngine() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { assets, loaded } = useAssetLoader();
-    const { player, ai, worldObjects, updatePhysics, gameState } = useGamePhysics();
+    const { player, ai, worldObjects, updatePhysics, gameState, startGame } = useGamePhysics();
     const requestRef = useRef<number>(0);
 
     // Quick reload for now to "Restart" (Physics hook needs a reset function, but reload is safer for proto)
@@ -170,7 +170,11 @@ export default function GameEngine() {
                 Controls: Arrows to Steer | Down to Tuck
             </div>
 
-            <ResultOverlay status={gameState} onRestart={handleRestart} />
+            <ResultOverlay
+                status={gameState}
+                onRestart={handleRestart}
+                onStart={startGame}
+            />
         </div>
     );
 }

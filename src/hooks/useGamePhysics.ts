@@ -24,7 +24,7 @@ export type GameStatus = 'START_SCREEN' | 'RACING' | 'FINISHED' | 'CRASHED';
 export function useGamePhysics() {
     // Generate world once on mount
     const [worldObjects] = useState<WorldObject[]>(() => generateCourse());
-    const [gameState, setGameState] = useState<GameStatus>('RACING'); // Keeping RACING default for now until menu exists
+    const [gameState, setGameState] = useState<GameStatus>('START_SCREEN');
 
     // ... rest of state
 
@@ -173,5 +173,7 @@ export function useGamePhysics() {
         }
     }, [player.y, gameState]);
 
-    return { player, ai, worldObjects, updatePhysics, gameState };
+    const startGame = () => setGameState('RACING');
+
+    return { player, ai, worldObjects, updatePhysics, gameState, startGame };
 }

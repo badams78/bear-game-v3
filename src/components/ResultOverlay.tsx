@@ -6,14 +6,34 @@ import { GameStatus } from '../hooks/useGamePhysics';
 interface ResultOverlayProps {
     status: GameStatus;
     onRestart: () => void;
+    onStart: () => void;
 }
 
-export default function ResultOverlay({ status, onRestart }: ResultOverlayProps) {
+export default function ResultOverlay({ status, onRestart, onStart }: ResultOverlayProps) {
     if (status === 'RACING') return null;
 
     return (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-slate-900 border-2 border-slate-700 p-8 rounded-xl max-w-sm text-center shadow-2xl transform transition-all scale-100">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-slate-900 border-2 border-slate-700 p-8 rounded-xl max-w-md text-center shadow-2xl transform transition-all scale-100">
+
+                {status === 'START_SCREEN' && (
+                    <>
+                        <h1 className="text-5xl font-bold text-white mb-2 tracking-tighter italic">EAGLE HILL<br /><span className="text-green-500">DOWNHILL</span></h1>
+                        <p className="text-slate-400 mb-8 mt-4 text-lg">Race the Cardigan Kid to the Lodge.</p>
+
+                        <div className="space-y-4">
+                            <button
+                                onClick={onStart}
+                                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded text-xl transition-colors shadow-lg shadow-green-900/20"
+                            >
+                                START RACE
+                            </button>
+                            <p className="text-xs text-slate-500 uppercase tracking-widest">
+                                Controls: Arrows to Steer • Down to Tuck
+                            </p>
+                        </div>
+                    </>
+                )}
                 {status === 'FINISHED' && (
                     <>
                         <div className="text-yellow-500 text-6xl mb-4">🏆</div>

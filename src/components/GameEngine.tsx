@@ -238,7 +238,8 @@ export default function GameEngine() {
         ctx.font = 'bold 20px sans-serif';
         ctx.fillText(`${Math.round(p.speedY * 2.2)} MPH`, 20, 40);
 
-        const progress = Math.min(1, p.y / 5000);
+        // Distance Bar
+        const progress = Math.min(1, p.y / 50000);
         ctx.fillStyle = 'rgba(0,0,0,0.1)';
         ctx.fillRect(20, 60, 200, 10);
         ctx.fillStyle = '#16a34a';

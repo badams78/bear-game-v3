@@ -13,7 +13,7 @@ export type WorldObject = {
 const SECTOR_LENGTH = 1250;
 const TREE_DENSITY = 0.08; // Chance per unit? No, safer to generate chunks.
 
-export function generateCourse(totalDistance: number = 5000): WorldObject[] {
+export function generateCourse(totalDistance: number = 50000): WorldObject[] {
     const objects: WorldObject[] = [];
     let currentY = 200; // Start a bit down
 
@@ -29,42 +29,40 @@ export function generateCourse(totalDistance: number = 5000): WorldObject[] {
         });
     }
 
-    // SECTOR 1: THE DROP (Wide, few trees)
-    for (let y = 200; y < SECTOR_LENGTH; y += 150) {
-        // Random trees on edges
-        if (Math.random() > 0.3) add('TREE', Math.random() * 15, y); // Left wall
-        if (Math.random() > 0.3) add('TREE', 85 + Math.random() * 15, y); // Right wall
+    // SECTORS GENERATION
+    // We cover 200 -> totalDistance
+    const SECTOR_SIZE = 5000;
 
-        // Gates
-        if (y % 400 < 50) {
-            add('GATE_LEFT', 30, y);
-            add('GATE_RIGHT', 70, y);
+    for (let y = 200; y < totalDistance; y += 100) {
+        // Difficulty ramps up
+        const progress = y / totalDistance;
+
+        // TREES - Edges always
+        add('TREE', Math.random() * 10, y);
+        add('TREE', 90 + Math.random() * 10, y);
+
+        // Random Obstacles in middle
+        // Density increases with progress
+        if (Math.random() < 0.1 + (progress * 0.2)) {
+            add('TREE', 20 + Math.random() * 60, y);
+        }
+
+        // Gates every 400ish
+        if (y % 400 < 100) {
+            const offset = Math.sin(y * 0.01) * 30; // Winding course
+            add('GATE_LEFT', 30 + offset, y);
+            add('GATE_RIGHT', 70 + offset, y);
+        }
+
+        // Ice Patches (Sector 3 equivalent)
+        if (progress > 0.6 && Math.random() > 0.9) {
+            add('ICE_PATCH', 30 + Math.random() * 40, y);
         }
     }
 
-    // LANDMARK: THE ROCK
-    objects.push({
-        id: 'L_ROCK',
-        type: 'LANDMARK_ROCK',
-        x: 80,
-        y: SECTOR_LENGTH,
-        width: 120,
-        height: 100
-    });
-
-    // SECTOR 2: THE WOODS (Narrow)
-    for (let y = SECTOR_LENGTH + 100; y < SECTOR_LENGTH * 2; y += 100) {
-        add('TREE', Math.random() * 25, y);
-        add('TREE', 75 + Math.random() * 25, y);
-
-        // Occasional obstacle in middle
-        if (Math.random() > 0.8) add('TREE', 30 + Math.random() * 40, y);
-    }
-
-    // SECTOR 3: ICY FLATS
-    for (let y = SECTOR_LENGTH * 2; y < SECTOR_LENGTH * 3; y += 200) {
-        add('ICE_PATCH', 20 + Math.random() * 60, y);
-    }
+    // LANDMARKS
+    add('LANDMARK_ROCK', 80, totalDistance * 0.3);
+    add('LANDMARK_ROCK', 20, totalDistance * 0.7);
 
     // FINISH LINE
     objects.push({

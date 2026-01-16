@@ -173,7 +173,7 @@ export function useGamePhysics() {
     // We can do a useEffect to monitor player.y)
 
     useEffect(() => {
-        if (player.y >= 5000 && gameState === 'RACING') {
+        if (player.y >= 50000 && gameState === 'RACING') {
             setGameState('FINISHED');
         }
     }, [player.y, gameState]);
